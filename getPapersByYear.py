@@ -18,7 +18,10 @@ MAX_COUNT = 1000
 PAUSE = 10 # in seconds
 TIMEOUT = 60000 # in millis, 1 min
 
-years = range(1929, 2018)
+# TODO increase scrape rate
+# save offset. create option to start year at given offset for the first year
+
+years = range(1936, 2018)
 
 
 def getPapersByYear(year):

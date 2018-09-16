@@ -12,7 +12,7 @@ doc = annualPaperCountCollection['main']
 
 url = config['baseUrl'] + 'calchistogram'
 
-years = range(1900, 2018)
+years = range(1901, 2018)
 
 
 def getAnnualPaperCount(year):
@@ -39,6 +39,8 @@ def getAnnualPaperCount(year):
   # put new value in doc
   doc[year] = obj['num_entities']
 
+  # save update to doc
+  doc.save()
   
 
 
