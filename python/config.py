@@ -1,7 +1,9 @@
-from pyArango.connection import *
+from arango import ArangoClient
 
 config = {
-  'conn': Connection(username = '', password = ''),
+  'client': ArangoClient(host = 'localhost'),
+  'username': 'emile',
+  'password': 'Poochie',
   'headers': {
     'Ocp-Apim-Subscription-Key': '0396c9861520451b87ed2217c28a48e7'
   },
