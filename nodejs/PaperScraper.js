@@ -45,7 +45,7 @@ class PaperScraper extends EventEmitter {
 
     // send get request
     try {
-      return await request.get(URL, { qs, headers: config.headers, json: true })
+      return request.get(URL, { qs, headers: config.headers, json: true })
     } catch (err) {
       throw new Error(err)
     }
@@ -86,9 +86,7 @@ class PaperScraper extends EventEmitter {
         return 'created'
       }
     } catch (err) {
-      console.log(err)
-      console.log(paper)
-      process.exit()
+      throw new Error(err)
     }
     
   }
@@ -101,46 +99,58 @@ class PaperScraper extends EventEmitter {
       throw new Error(`limit must be divisible by MAX_COUNT: ${MAX_COUNT}`)
 
     let year = start
-    let count = 0
     let offset = initialOffset
 
     const loop = () => {
 
-      this.query(year, offset).then(obj => {
-        const papers = obj.entities
+      this.query(year, offset)
+      .then(res => {
+        const papers = res.entities
         for (const paper of papers) {
           this.emit('rawPaper', paper)
           this.editPaper(paper)
-          this.savePaper(paper).then(res => {
-            count++
-            this.emit('update', { paper, year, count, res })
-          }).catch(err => {
+          this.savePaper(paper)
+          .then(action => {
+            this.emit('update', { paper, action })
+          })
+          .catch(err => {
             console.log(err)
             process.exit()
           })
         }
 
-        // reached final year. close everything
-        if (year === end) clearInterval(refreshIntervalId)
-
+        // if returned papers array is less than MAX_COUNT, so ran out of papers for that year
         // finished querying this year
         // step to next year
-        if (papers.length < MAX_COUNT || offset >= limit) {
+        if (papers.length < MAX_COUNT) {
           year += step
-          count = 0
           offset = 0
+          // finished the final year. stop program
+          if (year > end) clearInterval(refreshIntervalId)
         }
-      }).catch(err => {
+
+      })
+      .catch(err => {
         console.log(err)
         process.exit()
       })
 
       offset += MAX_COUNT
+
+      // the number of queries we've made has bumped up against our limit
+      // finished querying this year
+      // step to next year
+      if (offset === limit) {
+        year += step
+        offset = 0
+        // finished the final year. stop program
+        if (year > end) clearInterval(refreshIntervalId)
+      }
+
     }
 
     // start loop
     const refreshIntervalId = setInterval(loop, PAUSE)
-
   }
 }
 

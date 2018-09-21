@@ -5,12 +5,20 @@ const paperScraper = new PaperScraper()
 paperScraper.on('rawPaper', paper => {
   // send it to author builder
 })
+
+let prevYear = null
+let count = 0
 paperScraper.on('update', update => {
+  if (!prevYear) prevYear = update.paper.Y
+  if (prevYear < update.paper.Y) count = 0
+  count++
+  console.log('count', count)
   // console.log('paper', update.paper)
-  console.log('year', update.year)
-  console.log('count', update.count)
-  console.log('res', update.res)
+  console.log('year', update.paper.Y)
+  console.log('res', update.action)
   console.log()
+
+  prevYear = update.paper.Y
 })
 paperScraper.scrape(1900, 1901, {
   initialOffset: 0,
