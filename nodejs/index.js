@@ -1,36 +1,44 @@
-const PaperScraper = require('./PaperScraper')
-const PaperCountScraper = require('./PaperCountScraper')
+const paperScraper = require('./src/paperScraper')
+const DocSaver = require('./src/DocSaver')
+const paperCountScraper = require('./src/paperCountScraper')
 
-const paperScraper = new PaperScraper()
-paperScraper.on('rawPaper', paper => {
-  // send it to author builder
-})
+const docSaver = new DocSaver()
 
 let prevYear = null
 let count = 0
-paperScraper.on('update', update => {
-  if (!prevYear) prevYear = update.paper.Y
-  if (prevYear < update.paper.Y) count = 0
+paperScraper.on('rawPaper', paper => {
+
+  if (!prevYear) prevYear = paper.Y
+  if (prevYear < paper.Y) count = 0
   count++
+  prevYear = paper.Y
+
+  docSaver.editPaper(paper)
+  docSaver.saveDoc(paper)
+
+  // authorBuilder.build(paper)
+  // authorBuilder.saveDoc()
+
   console.log('count', count)
-  // console.log('paper', update.paper)
-  console.log('year', update.paper.Y)
-  console.log('res', update.action)
+  console.log('year', paper.Y)
   console.log()
 
-  prevYear = update.paper.Y
-})
-paperScraper.scrape(1900, 1901, {
-  initialOffset: 0,
-  limit: Infinity
 })
 
+paperScraper.scrape(2016, 2016, {
+  limit: 1000000,
+  step: -1
+})
 
 
 
-// const paperCountScraper = new PaperCountScraper()
-// paperCountScraper.on('update', e => console.log(e))
+
+paperCountScraper.on('update', obj => {
+  docSaver.saveDoc({
+    _key: paperCountScraper.key,
+    count: obj.res.num_entities,
+    year: obj.year
+  })
+})
 // paperCountScraper.scrape(1900, 1902)
 
-
-// TODO: make a base class that PaperScraper, JournalScraper, etc, inherit from

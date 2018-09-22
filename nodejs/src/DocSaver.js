@@ -3,6 +3,7 @@ const config = require('../config')
 const db = config.db
 const paperCollection = db.collection('Paper')
 
+
 class DocSaver {
   constructor () {}
 
@@ -14,6 +15,9 @@ class DocSaver {
     delete paper.logprob
     paper._key = String(paper.Id)
 
+    // if no reference key, create empty ref list
+    if (!('RId' in paper)) paper.RId = []
+
     // jsonify Extended metadata
     if ('E' in paper) paper.E = JSON.parse(paper.E)
 
@@ -21,8 +25,6 @@ class DocSaver {
     const date = new Date().getTime()
     if ('createDate' in paper) paper.updateDate = date
     else paper.createDate = date
-
-    return paper
   }
 
   /**
